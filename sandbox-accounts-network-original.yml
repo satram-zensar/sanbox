@@ -1,0 +1,627 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  Sandbox OU - VPCs, Subnets, Route Tables (FS-TU, INT, CUST, SEC, COLL)
+
+Parameters:
+  CreateCloudWanRoutes:
+    Type: String
+    Description: "Set to 'true' to create routes to CloudWAN Core Network. Default is 'false'."
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+
+  CoreNetworkArn:
+    Type: String
+    Description: "CloudWAN Core Network ARN (required if CreateCloudWanRoutes = true)."
+    Default: ""
+
+  AvailabilityZones:
+    Type: CommaDelimitedList
+    Description: Three availability zones in order (AZ1,AZ2,AZ3). 
+    Default: eu-west-1a,eu-west-1b,eu-west-1c
+
+  # Tag parameters (LLD lists Tagging fields; defaults provided)
+  CostCenter:
+    Type: String
+    Description: Cost Center tag value 
+    Default: IMS-Sandbox
+  Environment:
+    Type: String
+    Description: Environment tag value sandbox, dev)
+    Default: sandbox
+  Owner:
+    Type: String
+    Description: Owner tag value (point of contact/team)
+    Default: sandbox-team
+  Project:
+    Type: String
+    Description: Project tag value (if applicable)
+    Default: IMS-Sandbox-Project
+  Application:
+    Type: String
+    Description: Application tag value (if applicable)
+    Default: sandbox-network
+  Compliance:
+    Type: String
+    Description: Compliance tag value 
+    Default: none
+
+Resources:
+
+  ###################################
+  # FS-TU Sandbox VPC
+  ###################################
+  SandboxVpcFstu:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.88.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: vpc-fstu-sbx-euw1-01
+        - Key: Cost Center
+          Value: !Ref CostCenter
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Project
+          Value: !Ref Project
+        - Key: Application
+          Value: !Ref Application
+        - Key: Compliance
+          Value: !Ref Compliance
+
+  SandboxSubnetFstuA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcFstu
+      CidrBlock: 10.0.88.0/26
+      AvailabilityZone: !Select [0, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-fstu-euw1a
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetFstuB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcFstu
+      CidrBlock: 10.0.88.64/26
+      AvailabilityZone: !Select [1, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-fstu-euw1b
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetFstuC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcFstu
+      CidrBlock: 10.0.88.128/26
+      AvailabilityZone: !Select [2, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-fstu-euw1c
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteTableFstu:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SandboxVpcFstu
+      Tags:
+        - Key: Name
+          Value: rtb-fstu-sbx-fstuappresource-euw1
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteFstu:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SandboxRouteTableFstu
+      DestinationCidrBlock: 10.0.88.0/24
+      CoreNetworkArn: !Ref CoreNetworkArn
+
+  SandboxAssocFstuA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetFstuA
+      RouteTableId: !Ref SandboxRouteTableFstu
+
+  SandboxAssocFstuB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetFstuB
+      RouteTableId: !Ref SandboxRouteTableFstu
+
+  SandboxAssocFstuC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetFstuC
+      RouteTableId: !Ref SandboxRouteTableFstu
+
+  ###################################
+  # INT Sandbox VPC
+  ###################################
+  SandboxVpcInt:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.89.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: vpc-int-sbx-euw1-01
+        - Key: Cost Center
+          Value: !Ref CostCenter
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Project
+          Value: !Ref Project
+        - Key: Application
+          Value: !Ref Application
+        - Key: Compliance
+          Value: !Ref Compliance
+
+  SandboxSubnetIntA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcInt
+      CidrBlock: 10.0.89.0/26
+      AvailabilityZone: !Select [0, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-int-euw1a
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetIntB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcInt
+      CidrBlock: 10.0.89.64/26
+      AvailabilityZone: !Select [1, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-int-euw1b
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetIntC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcInt
+      CidrBlock: 10.0.89.128/26
+      AvailabilityZone: !Select [2, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-int-euw1c
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteTableInt:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SandboxVpcInt
+      Tags:
+        - Key: Name
+          Value: rtb-int-sbx-intappresource-euw1
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteInt:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SandboxRouteTableInt
+      DestinationCidrBlock: 10.0.89.0/24
+      CoreNetworkArn: !Ref CoreNetworkArn
+
+  SandboxAssocIntA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetIntA
+      RouteTableId: !Ref SandboxRouteTableInt
+
+  SandboxAssocIntB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetIntB
+      RouteTableId: !Ref SandboxRouteTableInt
+
+  SandboxAssocIntC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetIntC
+      RouteTableId: !Ref SandboxRouteTableInt
+
+  ###################################
+  # CUST Sandbox VPC
+  ###################################
+  SandboxVpcCust:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.90.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: vpc-cust-sbx-euw1-01
+        - Key: Cost Center
+          Value: !Ref CostCenter
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Project
+          Value: !Ref Project
+        - Key: Application
+          Value: !Ref Application
+        - Key: Compliance
+          Value: !Ref Compliance
+
+  SandboxSubnetCustA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcCust
+      CidrBlock: 10.0.90.0/26
+      AvailabilityZone: !Select [0, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-cust-euw1a
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetCustB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcCust
+      CidrBlock: 10.0.90.64/26
+      AvailabilityZone: !Select [1, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-cust-euw1b
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetCustC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcCust
+      CidrBlock: 10.0.90.128/26
+      AvailabilityZone: !Select [2, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-cust-euw1c
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteTableCust:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SandboxVpcCust
+      Tags:
+        - Key: Name
+          Value: rtb-cust-sbx-custappresource-euw1
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteCust:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SandboxRouteTableCust
+      DestinationCidrBlock: 10.0.90.0/24
+      CoreNetworkArn: !Ref CoreNetworkArn
+
+  SandboxAssocCustA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetCustA
+      RouteTableId: !Ref SandboxRouteTableCust
+
+  SandboxAssocCustB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetCustB
+      RouteTableId: !Ref SandboxRouteTableCust
+
+  SandboxAssocCustC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetCustC
+      RouteTableId: !Ref SandboxRouteTableCust
+
+  ###################################
+  # SEC Sandbox VPC
+  ###################################
+  SandboxVpcSec:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.91.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: vpc-sec-sbx-euw1-01
+        - Key: Cost Center
+          Value: !Ref CostCenter
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Project
+          Value: !Ref Project
+        - Key: Application
+          Value: !Ref Application
+        - Key: Compliance
+          Value: !Ref Compliance
+
+  SandboxSubnetSecA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcSec
+      CidrBlock: 10.0.91.0/26
+      AvailabilityZone: !Select [0, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-sec-euw1a
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetSecB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcSec
+      CidrBlock: 10.0.91.64/26
+      AvailabilityZone: !Select [1, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-sec-euw1b
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetSecC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcSec
+      CidrBlock: 10.0.91.128/26
+      AvailabilityZone: !Select [2, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-sec-euw1c
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteTableSec:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SandboxVpcSec
+      Tags:
+        - Key: Name
+          Value: rtb-sec-sbx-secappresource-euw1
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteSec:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SandboxRouteTableSec
+      DestinationCidrBlock: 10.0.91.0/24
+      CoreNetworkArn: !Ref CoreNetworkArn
+
+  SandboxAssocSecA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetSecA
+      RouteTableId: !Ref SandboxRouteTableSec
+
+  SandboxAssocSecB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetSecB
+      RouteTableId: !Ref SandboxRouteTableSec
+
+  SandboxAssocSecC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetSecC
+      RouteTableId: !Ref SandboxRouteTableSec
+
+  ###################################
+  # COLL Sandbox VPC
+  ###################################
+  SandboxVpcColl:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.92.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: vpc-coll-sbx-euw1-01
+        - Key: Cost Center
+          Value: !Ref CostCenter
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Project
+          Value: !Ref Project
+        - Key: Application
+          Value: !Ref Application
+        - Key: Compliance
+          Value: !Ref Compliance
+
+  SandboxSubnetCollA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcColl
+      CidrBlock: 10.0.92.0/26
+      AvailabilityZone: !Select [0, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-coll-euw1a
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetCollB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcColl
+      CidrBlock: 10.0.92.64/26
+      AvailabilityZone: !Select [1, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-coll-euw1b
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxSubnetCollC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref SandboxVpcColl
+      CidrBlock: 10.0.92.128/26
+      AvailabilityZone: !Select [2, !Ref AvailabilityZones]
+      Tags:
+        - Key: Name
+          Value: sn-coll-euw1c
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteTableColl:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SandboxVpcColl
+      Tags:
+        - Key: Name
+          Value: rtb-coll-sbx-collappresource-euw1
+        - Key: Cost Center
+          Value: !Ref CostCenter
+
+  SandboxRouteColl:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SandboxRouteTableColl
+      DestinationCidrBlock: 10.0.92.0/24
+      CoreNetworkArn: !Ref CoreNetworkArn
+
+  SandboxAssocCollA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetCollA
+      RouteTableId: !Ref SandboxRouteTableColl
+
+  SandboxAssocCollB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetCollB
+      RouteTableId: !Ref SandboxRouteTableColl
+
+  SandboxAssocCollC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SandboxSubnetCollC
+      RouteTableId: !Ref SandboxRouteTableColl
+
+Outputs:
+
+  # FS-TU
+  FstuVpcId:
+    Description: FS-TU Sandbox VPC ID
+    Value: !Ref SandboxVpcFstu
+    Export:
+      Name: !Sub "${AWS::StackName}-FstuVpcId"
+
+  FstuSubnetIds:
+    Description: FS-TU Subnet IDs (comma separated)
+    Value: !Join [",", [!Ref SandboxSubnetFstuA, !Ref SandboxSubnetFstuB, !Ref SandboxSubnetFstuC]]
+    Export:
+      Name: !Sub "${AWS::StackName}-FstuSubnetIds"
+
+  FstuRouteTableId:
+    Description: FS-TU Route Table ID
+    Value: !Ref SandboxRouteTableFstu
+    Export:
+      Name: !Sub "${AWS::StackName}-FstuRouteTableId"
+
+  # INT
+  IntVpcId:
+    Description: INT Sandbox VPC ID
+    Value: !Ref SandboxVpcInt
+    Export:
+      Name: !Sub "${AWS::StackName}-IntVpcId"
+
+  IntSubnetIds:
+    Description: INT Subnet IDs (comma separated)
+    Value: !Join [",", [!Ref SandboxSubnetIntA, !Ref SandboxSubnetIntB, !Ref SandboxSubnetIntC]]
+    Export:
+      Name: !Sub "${AWS::StackName}-IntSubnetIds"
+
+  IntRouteTableId:
+    Description: INT Route Table ID
+    Value: !Ref SandboxRouteTableInt
+    Export:
+      Name: !Sub "${AWS::StackName}-IntRouteTableId"
+
+  # CUST
+  CustVpcId:
+    Description: CUST Sandbox VPC ID
+    Value: !Ref SandboxVpcCust
+    Export:
+      Name: !Sub "${AWS::StackName}-CustVpcId"
+
+  CustSubnetIds:
+    Description: CUST Subnet IDs (comma separated)
+    Value: !Join [",", [!Ref SandboxSubnetCustA, !Ref SandboxSubnetCustB, !Ref SandboxSubnetCustC]]
+    Export:
+      Name: !Sub "${AWS::StackName}-CustSubnetIds"
+
+  CustRouteTableId:
+    Description: CUST Route Table ID
+    Value: !Ref SandboxRouteTableCust
+    Export:
+      Name: !Sub "${AWS::StackName}-CustRouteTableId"
+
+  # SEC
+  SecVpcId:
+    Description: SEC Sandbox VPC ID
+    Value: !Ref SandboxVpcSec
+    Export:
+      Name: !Sub "${AWS::StackName}-SecVpcId"
+
+  SecSubnetIds:
+    Description: SEC Subnet IDs (comma separated)
+    Value: !Join [",", [!Ref SandboxSubnetSecA, !Ref SandboxSubnetSecB, !Ref SandboxSubnetSecC]]
+    Export:
+      Name: !Sub "${AWS::StackName}-SecSubnetIds"
+
+  SecRouteTableId:
+    Description: SEC Route Table ID
+    Value: !Ref SandboxRouteTableSec
+    Export:
+      Name: !Sub "${AWS::StackName}-SecRouteTableId"
+
+  # COLL
+  CollVpcId:
+    Description: COLL Sandbox VPC ID
+    Value: !Ref SandboxVpcColl
+    Export:
+      Name: !Sub "${AWS::StackName}-CollVpcId"
+
+  CollSubnetIds:
+    Description: COLL Subnet IDs (comma separated)
+    Value: !Join [",", [!Ref SandboxSubnetCollA, !Ref SandboxSubnetCollB, !Ref SandboxSubnetCollC]]
+    Export:
+      Name: !Sub "${AWS::StackName}-CollSubnetIds"
+
+  CollRouteTableId:
+    Description: COLL Route Table ID
+    Value: !Ref SandboxRouteTableColl
+    Export:
+      Name: !Sub "${AWS::StackName}-CollRouteTableId"
